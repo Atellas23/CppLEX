@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <cfloat>
+#include <utils.hh>
+#include <vec.hh>
 using namespace std;
 
 using vd = vector<double>;
@@ -8,7 +10,7 @@ using vb = vector<bool>;
 using vi = vector<int>;
 using matrix = vector<vd>;
 
-enum errorType
+/*enum errorType
 {
     unknownError,
     uncoherentArrays
@@ -28,8 +30,8 @@ void logError(errorType err = unknownError)
         cerr << "error: non coherent vectors/matrices" << endl;
     else
         cerr << "error: unrecognized operation" << endl;
-}
-
+}*/
+/*
 double operator*(const vd &u, const vd &v)
 {
     if (u.size() != v.size())
@@ -75,7 +77,7 @@ vd operator*(double a, const vd &v)
     for (double &x : res)
         x *= a;
     return res;
-}
+}*/
 
 vd column(const matrix &A, int idx)
 {
