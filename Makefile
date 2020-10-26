@@ -1,5 +1,5 @@
 IDIR=include
-CXXFLAGS=-I$(IDIR) -Wall -O3 -std=c++14
+CXXFLAGS=-I$(IDIR) -Wall -O3 -std=c++14 -D_GLIBCXX_DEBUG
 
 _DEPS = utils.hh vec.hh matrix.hh
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))

@@ -6,226 +6,6 @@
 #include <matrix.hh>
 using namespace std;
 
-/* using vd = vector<double>;
-using vb = vector<bool>;
-using vi = vector<int>;
-using matrix = vector<vd>; */
-
-/* enum errorType
-{
-    unknownError,
-    uncoherentArrays
-};
-
-enum problemType
-{
-    unlimitedProblem,
-    unfeasibleProblem,
-    uniqueOptimum,
-    alternativeOptima
-};
-
-void logError(errorType err = unknownError)
-{
-    if (err == uncoherentArrays)
-        cerr << "error: non coherent vectors/matrices" << endl;
-    else
-        cerr << "error: unrecognized operation" << endl;
-}*/
-/*
-double operator*(const vd &u, const vd &v)
-{
-    if (u.size() != v.size())
-    {
-        logError(uncoherentArrays);
-        return 0;
-    }
-    double s = 0;
-    for (int i = 0; i < (int)u.size(); ++i)
-        s += u[i] * v[i];
-    return s;
-}
-
-vd operator+(const vd &u, const vd &v)
-{
-    if (u.size() != v.size())
-    {
-        logError(uncoherentArrays);
-        return u;
-    }
-    vd res(u);
-    for (int i = 0; i < (int)u.size(); ++i)
-        res[i] += v[i];
-    return res;
-}
-
-vd operator-(const vd &u, const vd &v)
-{
-    if (u.size() != v.size())
-    {
-        logError(uncoherentArrays);
-        return u;
-    }
-    vd res(u);
-    for (int i = 0; i < (int)u.size(); ++i)
-        res[i] -= v[i];
-    return res;
-}
-
-vd operator*(double a, const vd &v)
-{
-    vd res(v);
-    for (double &x : res)
-        x *= a;
-    return res;
-}*/
-
-/* vd column(const matrix &A, int idx)
-{
-    vd res;
-    for (vd row : A)
-        res.push_back(row[idx]);
-    return res;
-} */
-
-/* matrix transpose(const matrix &m)
-{
-    int n1 = m.size(), n2 = m[0].size();
-    matrix res(n2, vd(n1, 0.0));
-    for (int i = 0; i < n1; ++i)
-    {
-        for (int j = 0; j < n2; ++j)
-            res[j][i] = m[i][j];
-    }
-    return res;
-} */
-
-/* vd operator*(const vd &u, const matrix &B)
-{
-    int m1 = u.size();
-    int n2 = B.size(), m2 = B[0].size();
-    if (m1 != n2)
-    {
-        logError(uncoherentArrays);
-        return vd(0);
-    }
-    vd res(m2, 0.0);
-
-    for (int j = 0; j < m2; ++j)
-        res[j] = u * column(B, j);
-    return res;
-}
-
-vd operator*(const matrix &A, const vd &v)
-{
-    int n1 = A.size(), m1 = A[0].size();
-    int n2 = v.size();
-    if (m1 != n2)
-    {
-        logError(uncoherentArrays);
-        return vd(0);
-    }
-    vd res(n1, 0.0);
-
-    for (int i = 0; i < n1; ++i)
-        res[i] = column(A, i) * v;
-    return res;
-} */
-
-/* matrix operator*(const matrix &A, const matrix &B)
-{
-    int n1 = A.size(), m1 = A[0].size();
-    int n2 = B.size(), m2 = B[0].size();
-    if (m1 != n2)
-    {
-        logError(uncoherentArrays);
-        return A;
-    }
-    matrix res(n1, vd(m2, 0));
-    for (int i = 0; i < n1; ++i)
-    {
-        for (int j = 0; j < m2; ++j)
-            res[i][j] = A[i] * column(B, j);
-    }
-    return res;
-} */
-
-/* matrix operator*(int a, const matrix &A)
-{
-    matrix res(A);
-    for (int i = 0; i < (int)A.size(); ++i)
-    {
-        for (int j = 0; j < (int)A[0].size(); ++j)
-            res[i][j] *= a;
-    }
-    return res;
-} */
-
-/* matrix takeColumns(const vi &take, const matrix &A)
-{
-    matrix res;
-    for (int i = 0; i < (int)take.size(); ++i)
-        res.push_back(column(A, take[i]));
-    return transpose(res);
-} */
-
-/* matrix identityMatrix(int k)
-{
-    matrix res(k, vd(k, 0.0));
-    for (int i = 0; i < k; ++i)
-        res[i][i] = 1;
-    return res;
-} */
-
-/* vd paste(const vd &u, const vd &v)
-{
-    vd res(u);
-    for (double d : v)
-        res.push_back(d);
-    return res;
-} */
-
-/* matrix paste(const matrix &A, const matrix &B)
-{
-    if (A.size() != B.size())
-    {
-        logError(uncoherentArrays);
-        return A;
-    }
-    matrix res(A.size());
-    for (int i = 0; i < (int)A.size(); ++i)
-        res[i] = paste(A[i], B[i]);
-    return res;
-} */
-
-/* vd subvec(const vd &u, const vi &idxs)
-{
-    vd res(idxs.size());
-    for (int i = 0; i < (int)idxs.size(); ++i)
-        res[i] = u[idxs[i]];
-    return res;
-} */
-
-/* bool operator>=(const vd &v, double a)
-{
-    for (double x : v)
-    {
-        if (x < a)
-            return false;
-    }
-    return true;
-} */
-
-/* bool operator>(const vd &v, double a)
-{
-    for (double x : v)
-    {
-        if (x <= a)
-            return false;
-    }
-    return true;
-} */
-
 int blandRule(const vd &r, const vi &n)
 {
     int q = n[0];
@@ -236,13 +16,6 @@ int blandRule(const vd &r, const vi &n)
     }
     return q;
 }
-
-/* void permutate(vd &x, const vi &perm)
-{
-    vd backup(x);
-    for (int i = 0; i < (int)x.size(); ++i)
-        x[i] = backup[perm[i]];
-} */
 
 /*
 ASP1: PRIMAL SIMPLEX ALGORITHM IMPLEMENTATION
@@ -307,10 +80,10 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
             // check basis inside of {1,...,n}
             for (int i = 0; i < (int)base.size(); ++i)
             {
+                int weWantIdx = 0;
                 if (base[i] >= n)
                 {
-                    int weWantIdx = 0;
-                    for (int j = 0; j < (int)nonBase.size(); ++j)
+                    for (int j = weWantIdx + 1; j < (int)nonBase.size(); ++j)
                     {
                         if (nonBase[j] < n)
                         {
@@ -318,9 +91,7 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
                             break;
                         }
                     }
-                    int aux = base[i];
-                    base[i] = nonBase[weWantIdx];
-                    nonBase[weWantIdx] = aux;
+                    swap(base[i], nonBase[weWantIdx]);
                 }
             }
             // and if not, we can pick a non-basic variable and exchange
@@ -357,9 +128,10 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
         {
             if (db[i] < 0)
             {
-                if (-solution[base[i]] / db[i] <= maxStep and base[i] < base[exitVariable])
+                double tempStep = -solution[base[i]] / db[i];
+                if (tempStep < maxStep or (tempStep == maxStep and base[i] < base[exitVariable]))
                 {
-                    maxStep = -solution[base[i]] / db[i];
+                    maxStep = tempStep;
                     exitVariable = i;
                 }
             }
@@ -369,31 +141,28 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
         for (int i = 0; i < (int)base.size(); ++i)
             solution[base[i]] += maxStep * db[i];
         solution[q] = maxStep;
+        solution[base[exitVariable]] = 0;
 
-        for (int i = 0; i < (int)nonBase.size(); ++i)
-        {
-            if (nonBase[i] == q)
-            {
-                nonBase[i] = base[exitVariable];
-                break;
-            }
-        }
-        // nonBase[q] = base[exitVariable];
+        int idx = 0;
+        while (nonBase[idx++] != q)
+            continue;
+        nonBase[idx] = base[exitVariable];
+
         base[exitVariable] = q;
         matrix Eta = identityMatrix(m);
-        vd etarow(m, 0.0);
         for (int i = 0; i < m; ++i)
         {
             if (i == exitVariable)
-                etarow[i] = -1 / db[exitVariable];
-            etarow[i] = -db[i] / db[exitVariable];
+                Eta[exitVariable][i] = -1 / db[exitVariable];
+            else
+                Eta[exitVariable][i] = -db[i] / db[exitVariable];
         }
-        Eta[exitVariable] = etarow;
         Eta = transpose(Eta);
         Binverse = Eta * Binverse;
+        z += maxStep * reducedCosts[q];
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
-    return unfeasibleProblem;
+    return unfeasibleProblem; // decoy
 }
 
 int main()
