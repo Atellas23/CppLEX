@@ -46,3 +46,39 @@ vd operator*(double a, const vd &v)
         x *= a;
     return res;
 }
+
+vd paste(const vd &u, const vd &v)
+{
+    vd res(u);
+    for (double d : v)
+        res.push_back(d);
+    return res;
+}
+
+vd subvec(const vd &u, const vi &idxs)
+{
+    vd res(idxs.size());
+    for (int i = 0; i < (int)idxs.size(); ++i)
+        res[i] = u[idxs[i]];
+    return res;
+}
+
+bool operator>=(const vd &v, double a)
+{
+    for (double x : v)
+    {
+        if (x < a)
+            return false;
+    }
+    return true;
+}
+
+bool operator>(const vd &v, double a)
+{
+    for (double x : v)
+    {
+        if (x <= a)
+            return false;
+    }
+    return true;
+}

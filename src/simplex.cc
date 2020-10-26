@@ -3,14 +3,15 @@
 #include <cfloat>
 #include <utils.hh>
 #include <vec.hh>
+#include <matrix.hh>
 using namespace std;
 
-using vd = vector<double>;
+/* using vd = vector<double>;
 using vb = vector<bool>;
 using vi = vector<int>;
-using matrix = vector<vd>;
+using matrix = vector<vd>; */
 
-/*enum errorType
+/* enum errorType
 {
     unknownError,
     uncoherentArrays
@@ -79,15 +80,15 @@ vd operator*(double a, const vd &v)
     return res;
 }*/
 
-vd column(const matrix &A, int idx)
+/* vd column(const matrix &A, int idx)
 {
     vd res;
     for (vd row : A)
         res.push_back(row[idx]);
     return res;
-}
+} */
 
-matrix transpose(const matrix &m)
+/* matrix transpose(const matrix &m)
 {
     int n1 = m.size(), n2 = m[0].size();
     matrix res(n2, vd(n1, 0.0));
@@ -97,9 +98,9 @@ matrix transpose(const matrix &m)
             res[j][i] = m[i][j];
     }
     return res;
-}
+} */
 
-vd operator*(const vd &u, const matrix &B)
+/* vd operator*(const vd &u, const matrix &B)
 {
     int m1 = u.size();
     int n2 = B.size(), m2 = B[0].size();
@@ -129,9 +130,9 @@ vd operator*(const matrix &A, const vd &v)
     for (int i = 0; i < n1; ++i)
         res[i] = column(A, i) * v;
     return res;
-}
+} */
 
-matrix operator*(const matrix &A, const matrix &B)
+/* matrix operator*(const matrix &A, const matrix &B)
 {
     int n1 = A.size(), m1 = A[0].size();
     int n2 = B.size(), m2 = B[0].size();
@@ -147,9 +148,9 @@ matrix operator*(const matrix &A, const matrix &B)
             res[i][j] = A[i] * column(B, j);
     }
     return res;
-}
+} */
 
-matrix operator*(int a, const matrix &A)
+/* matrix operator*(int a, const matrix &A)
 {
     matrix res(A);
     for (int i = 0; i < (int)A.size(); ++i)
@@ -158,33 +159,33 @@ matrix operator*(int a, const matrix &A)
             res[i][j] *= a;
     }
     return res;
-}
+} */
 
-matrix takeColumns(const vi &take, const matrix &A)
+/* matrix takeColumns(const vi &take, const matrix &A)
 {
     matrix res;
     for (int i = 0; i < (int)take.size(); ++i)
         res.push_back(column(A, take[i]));
     return transpose(res);
-}
+} */
 
-matrix identityMatrix(int k)
+/* matrix identityMatrix(int k)
 {
     matrix res(k, vd(k, 0.0));
     for (int i = 0; i < k; ++i)
         res[i][i] = 1;
     return res;
-}
+} */
 
-vd paste(const vd &u, const vd &v)
+/* vd paste(const vd &u, const vd &v)
 {
     vd res(u);
     for (double d : v)
         res.push_back(d);
     return res;
-}
+} */
 
-matrix paste(const matrix &A, const matrix &B)
+/* matrix paste(const matrix &A, const matrix &B)
 {
     if (A.size() != B.size())
     {
@@ -195,17 +196,17 @@ matrix paste(const matrix &A, const matrix &B)
     for (int i = 0; i < (int)A.size(); ++i)
         res[i] = paste(A[i], B[i]);
     return res;
-}
+} */
 
-vd subvec(const vd &u, const vi &idxs)
+/* vd subvec(const vd &u, const vi &idxs)
 {
     vd res(idxs.size());
     for (int i = 0; i < (int)idxs.size(); ++i)
         res[i] = u[idxs[i]];
     return res;
-}
+} */
 
-bool operator>=(const vd &v, double a)
+/* bool operator>=(const vd &v, double a)
 {
     for (double x : v)
     {
@@ -213,17 +214,17 @@ bool operator>=(const vd &v, double a)
             return false;
     }
     return true;
-}
+} */
 
-bool operator>(const vd &v, double a)
+/* bool operator>(const vd &v, double a)
 {
     for (double x : v)
     {
-        if (x >= a)
+        if (x <= a)
             return false;
     }
     return true;
-}
+} */
 
 int blandRule(const vd &r, const vi &n)
 {
@@ -236,12 +237,12 @@ int blandRule(const vd &r, const vi &n)
     return q;
 }
 
-void permutate(vd &x, const vi &perm)
+/* void permutate(vd &x, const vi &perm)
 {
     vd backup(x);
     for (int i = 0; i < (int)x.size(); ++i)
         x[i] = backup[perm[i]];
-}
+} */
 
 /*
 ASP1: PRIMAL SIMPLEX ALGORITHM IMPLEMENTATION
@@ -308,7 +309,7 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
             {
                 if (base[i] >= n)
                 {
-                    int weWantIdx;
+                    int weWantIdx = 0;
                     for (int j = 0; j < (int)nonBase.size(); ++j)
                     {
                         if (nonBase[j] < n)

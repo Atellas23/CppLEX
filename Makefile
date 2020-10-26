@@ -1,11 +1,11 @@
 IDIR=include
 CXXFLAGS=-I$(IDIR) -Wall -O3 -std=c++14
 
-_DEPS = utils.hh vec.hh
+_DEPS = utils.hh vec.hh matrix.hh
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 ODIR=obj
-_OBJ = utils.o vec.o simplex.o 
+_OBJ = utils.o vec.o matrix.o simplex.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 SDIR=src
