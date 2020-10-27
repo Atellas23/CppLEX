@@ -76,12 +76,23 @@ void read(string filename, matrix &A, vd &b, vd &c)
 #endif
 }
 
+// Precondition: There is one negative value in r
 int blandRule(const vd &r, const vi &n)
 {
     int q = n[0];
-    for (int i = 0; i < (int)n.size(); ++i)
+    for (int i = 1; i < (int)n.size(); ++i)
     {
         if (r[n[i]] < 0 and n[i] < q)
+            q = n[i];
+    }
+    return q;
+}
+
+// Precondition: There is one negative value in r
+int minValueRule(const vd& r, const vi& n){
+    int q = n[0];
+    for (int i = 1; i < (int) n.size(); i++){
+        if (r[n[i]] < r[q])
             q = n[i];
     }
     return q;
