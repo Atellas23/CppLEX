@@ -8,6 +8,10 @@ ODIR=obj
 _OBJ = utils.o vec.o matrix.o simplex.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
+TDIR=test
+_TOBJ = utils.o vec.o matrix.o 
+TOBJ = $(patsubst %,$(ODIR)/%,$(_TOBJ))
+
 SDIR=src
 
 
@@ -19,8 +23,15 @@ simplex.exe: $(OBJ)
 $(ODIR)/%.o: $(SDIR)/%.cc $(DEPS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
+.PHONY: clean test $(TDIR)/test_v%.exe
 
-.PHONY: clean
+$(TDIR)/test_v%.exe: $(TDIR)/test_v%.cc $(TOBJ)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+all-tests := $(addsuffix .exe, $(basename $(wildcard $(TDIR)/test_v*.cc)))
+
+test: $(all-tests)
+	$(patsubst %, %;, $^)
 
 clean:
-	rm -f $(ODIR)/*.o simplex.exe
+	rm -f $(ODIR)/*.o simplex.exe $(TDIR)/*.exe
