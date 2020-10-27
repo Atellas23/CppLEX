@@ -11,8 +11,8 @@ int main(){
     vd sum = u+v;
     for (int i = 0; i < (int) u.size(); i++)
         if (abs(sum[i] - expected[i]) > 1e-10){
-            cout << "La suma NO funciona" << endl;
+            cout << "La suma de vectores NO funciona" << endl;
             return 0;     
         }
-    cout << "La suma SI funciona" << endl;
+    cout << "La suma de vectores SI funciona" << endl;
 }

@@ -11,8 +11,8 @@ int main(){
     vd resta = u-v;
     for (int i = 0; i < (int) u.size(); i++)
         if (abs(resta[i] - expected[i]) > 1e-10){
-            cout << "La resta NO funciona" << endl;
+            cout << "La resta de vectores NO funciona" << endl;
             return 0;     
         }
-    cout << "La resta SI funciona" << endl;
+    cout << "La resta de vectores SI funciona" << endl;
 }
