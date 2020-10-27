@@ -30,9 +30,9 @@ matrix operator*(const matrix &A, const matrix &B)
     return res;
 }
 
-matrix operator*(int a, const matrix &A)
+matrix operator*(double a, const matrix &A)
 {
-    matrix res(A);
+    matrix res = A;
     for (int i = 0; i < (int)A.size(); ++i)
     {
         for (int j = 0; j < (int)A[0].size(); ++j)
