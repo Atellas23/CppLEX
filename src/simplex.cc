@@ -89,9 +89,11 @@ int blandRule(const vd &r, const vi &n)
 }
 
 // Precondition: There is one negative value in r
-int minValueRule(const vd& r, const vi& n){
+int minValueRule(const vd &r, const vi &n)
+{
     int q = n[0];
-    for (int i = 1; i < (int) n.size(); i++){
+    for (int i = 1; i < (int)n.size(); i++)
+    {
         if (r[n[i]] < r[q])
             q = n[i];
     }
@@ -231,25 +233,22 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         nonBase[idx] = base[exitVariable];
 
         base[exitVariable] = q;
-        matrix Eta = identityMatrix(m);
+
+        vd etacolumn(m, 0.0);
         for (int i = 0; i < m; ++i)
         {
             if (i == exitVariable)
-                Eta[exitVariable][i] = -1 / db[exitVariable];
+                etacolumn[i] = -1 / db[exitVariable];
             else
-                Eta[exitVariable][i] = -db[i] / db[exitVariable];
+                etacolumn[i] = -db[i] / db[exitVariable];
         }
-        Eta = transpose(Eta);
-        Binverse = Eta * Binverse;
-        /* OPTIMIZATION */
-        matrix aux = Binverse;
-        for (int i = 0; i < (int) Binverse.size(); i++){
-            for (int j = 0; j < (int) Binverse[0].size; j++){
-                aux[i][j] = Binverse[i][j] 
-                            + Eta[i][exitVariable] * Binverse[exitVariable][j];
-            }
+        for (int i = 0; i < m; ++i)
+        {
+            if (i != exitVariable)
+                Binverse[i] = Binverse[i] + etacolumn[i] * Binverse[exitVariable];
+            else
+                Binverse[i] = etacolumn[i] * Binverse[i];
         }
-        Binverse = aux;
         z += maxStep * reducedCosts[q];
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
