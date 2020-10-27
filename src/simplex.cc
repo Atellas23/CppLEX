@@ -1,10 +1,80 @@
 #include <iostream>
 #include <vector>
 #include <cfloat>
+#include <fstream>
 #include <utils.hh>
 #include <vec.hh>
 #include <matrix.hh>
 using namespace std;
+#define _TEST_READ
+
+void read(string filename, matrix &A, vd &b, vd &c)
+{
+    ifstream file(filename);
+    if (not file.good())
+    {
+        cerr << "error: the file \"" << filename << "\" could not be loaded." << endl;
+        return;
+    }
+    bool matr = true, restrictions = false, costs = false;
+    vd tempVec;
+    while (not file.eof())
+    {
+        string buff;
+        getline(file, buff);
+        trimWhitespace(buff);
+        if (buff == "end of matrix")
+        {
+            matr = false;
+            restrictions = true;
+            continue;
+        }
+        else if (buff == "end of restrictions")
+        {
+            restrictions = false;
+            costs = true;
+            continue;
+        }
+        else if (buff == "end of costs")
+        {
+            costs = false;
+            break;
+        }
+        vector<string> tkn = tokenize(buff);
+        if (matr)
+        {
+            for (auto a : tkn)
+                tempVec.push_back(stod(a));
+            A.push_back(tempVec);
+            tempVec.clear();
+        }
+        else if (restrictions)
+            for (auto bi : tkn)
+                b.push_back(stod(bi));
+        else if (costs)
+            for (auto ci : tkn)
+                c.push_back(stod(ci));
+    }
+#ifdef _TEST_READ
+    cout << "Matrix A:" << endl;
+    for (auto row : A)
+    {
+        for (int i = 0; i < (int)row.size(); ++i)
+            cout << (i ? " " : "") << row[i];
+        cout << endl;
+    }
+    cout << endl
+         << "Restrictions b:" << endl;
+    for (int j = 0; j < (int)b.size(); ++j)
+        cout << (j ? " " : "") << b[j];
+    cout << endl
+         << endl
+         << "Costs c:" << endl;
+    for (int j = 0; j < (int)c.size(); ++j)
+        cout << (j ? " " : "") << c[j];
+    cout << endl;
+#endif
+}
 
 int blandRule(const vd &r, const vi &n)
 {
@@ -32,9 +102,10 @@ costs: vector of costs of the LP problem
 solution: vector where the final solution (if it exists) will be stored
 solutionBase: vector where the final solution basis (if it exists) will be stored
 */
-problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solution, vi &solutionBase, int &iterations, int &phaseIiterations)
+problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi &solutionBase, int &iterations, int &phaseIiterations)
 {
-    int m = A.size(); // rank of A
+    int n = costs.size();
+    int m = b.size(); // rank of A
     /****    INITIALIZATION: BEGIN    ****/
 
     int phase = 1;
@@ -165,33 +236,24 @@ problemType ASP1(const matrix &A, const vd &b, int n, const vd &costs, vd &solut
     return unfeasibleProblem; // decoy
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        cerr << "usage: " << argv[0] << " <data file name>" << endl;
+        exit(0);
+    }
     cout << "First implementation of the Simplex algorithm, using" << endl
          << "the Bland rule and the inverse-product form." << endl;
-    int n, m;
-    cout << "Please enter the dimensions of the matrix (rows, columns): ";
-    cin >> n >> m;
-    matrix A(n, vd(m, 0.0));
-    cout << "Now enter the matrix." << endl;
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = 0; j < m; ++j)
-            cin >> A[i][j];
-    }
-    cout << "The vector of equality constrictions:" << endl;
-    vd b(n, 0.0);
-    for (int i = 0; i < n; ++i)
-        cin >> b[i];
-    cout << "The vector of costs: ";
-    vd c(m, 0.0);
-    for (int k = 0; k < m; ++k)
-        cin >> c[k];
-    vd storeSolution(n, 0.0);
-    vi storeBase(m, 0);
+    matrix A;
+    vd b, c;
+    read(argv[1], A, b, c);
+#ifndef _TEST_READ
+    vd storeSolution(c.size(), 0.0);
+    vi storeBase(b.size(), 0);
     int it = 0, phIit = 0;
     cout << "presimplex" << endl;
-    problemType PL = ASP1(A, b, n, c, storeSolution, storeBase, it, phIit);
+    problemType PL = ASP1(A, b, c, storeSolution, storeBase, it, phIit);
     cout << "postsimplex" << endl;
     if (PL == unlimitedProblem)
     {
@@ -219,4 +281,5 @@ int main()
     }
     else
         cout << "The problem returned as an unfeasible problem after " << phIit << " Simplex phase I iterations." << endl;
+#endif
 }
