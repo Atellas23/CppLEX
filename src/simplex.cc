@@ -241,6 +241,15 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         }
         Eta = transpose(Eta);
         Binverse = Eta * Binverse;
+        /* OPTIMIZATION */
+        matrix aux = Binverse;
+        for (int i = 0; i < (int) Binverse.size(); i++){
+            for (int j = 0; j < (int) Binverse[0].size; j++){
+                aux[i][j] = Binverse[i][j] 
+                            + Eta[i][exitVariable] * Binverse[exitVariable][j];
+            }
+        }
+        Binverse = aux;
         z += maxStep * reducedCosts[q];
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
