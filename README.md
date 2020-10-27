@@ -10,6 +10,6 @@ This is a C++ implementation of the Primal Simplex Algorithm, done within the sc
     - Possible eta matrix function. (À/mail)
 2. Most negative reduced cost rule. (J)
 3. Test that matrix and vector functions work as expected. (J)
-4. I/O data format (file?) (À)
+4. ~I/O data format (file?) (À)~
 5. Teacher data -> processable data. (4 -> J)
 6. Improve the Binverse updating (it only changes a row) (J)
