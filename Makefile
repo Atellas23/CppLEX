@@ -23,12 +23,12 @@ simplex.exe: $(OBJ)
 $(ODIR)/%.o: $(SDIR)/%.cc $(DEPS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-.PHONY: clean test $(TDIR)/test_v%.exe
+.PHONY: clean test $(TDIR)/test_%.exe
 
-$(TDIR)/test_v%.exe: $(TDIR)/test_v%.cc $(TOBJ)
+$(TDIR)/test_%.exe: $(TDIR)/test_%.cc $(TOBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
-all-tests := $(addsuffix .exe, $(basename $(wildcard $(TDIR)/test_v*.cc)))
+all-tests := $(addsuffix .exe, $(basename $(wildcard $(TDIR)/test_*.cc)))
 
 test: $(all-tests)
 	$(patsubst %, %;, $^)
