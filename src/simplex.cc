@@ -79,13 +79,16 @@ void read(string filename, matrix &A, vd &b, vd &c)
 }
 
 // Precondition: There is one negative value in r
-int blandRule(const vd &r, const vi &n)
+int blandRule(const vd &r, const vi &n, double& rq)
 {
     int q = n[0];
+    rq = r[0];
     for (int i = 1; i < (int)n.size(); ++i)
     {
-        if (r[i] < 0 and n[i] < q)
+        if (r[i] < 0 and n[i] < q){
             q = n[i];
+            rq = r[i];
+        }
     }
     return q;
 }
@@ -153,6 +156,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
     solution = paste(vd(n, 0.0), bhat); // phase 1 solution candidate
 
     double z = costsHat * solution;
+    matrix check;
     /****    INITIALIZATION: END      ****/
     iterations = phaseIiterations = 0;
     vd reducedCosts, oldSolution = solution;
@@ -183,8 +187,16 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         cout << "pot calcular reducedCosts" << endl;
         cout << "z: " << z << endl;
         int q = -1;
+        double rq;
         if (reducedCosts >= 0)
         {
+            // Check if correct
+            check = Binverse * takeColumns(base, Ahat);
+            assert((int)check.size() == m);
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < m; j++)
+                    assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+        
             if (phase == 2)
                 return uniqueOptimum;
             if (z > 0)
@@ -195,10 +207,10 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             cout << "hem entrat a fase II" << endl;
 
             // check basis inside of {1,...,n}
-            int weWantIdx = 0;
+            int weWantIdx = -1;
             for (int i = 0; i < (int)base.size(); ++i)
             {
-                if (base[i] >= n) // means base[i] is exiting the base
+                if (base[i] >= m) // means base[i] is exiting the base
                 {
                     for (int j = weWantIdx + 1; j < (int)nonBase.size(); ++j)
                     {
@@ -213,23 +225,40 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                     // here, maxStep is 0 because we're not really moving between extreme points (we have degeneration)
                     solution[nonBase[weWantIdx]] = solution[base[i]] = 0;
 
+                    // Check if correct
+                    check = Binverse * takeColumns(base, Ahat);
+                    assert((int)check.size() == m);
+                    for (int i = 0; i < m; i++)
+                        for (int j = 0; j < m; j++)
+                            assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+        
+
                     swap(base[i], nonBase[weWantIdx]);
                     vd etacolumn(m, 0.0);
+                    // exitVariable = i
                     for (int k = 0; k < m; ++k)
                     {
-                        if (k == base[i])
-                            etacolumn[k] = -1 / dullBasicDirection[base[i]];
+                        if (k == i)
+                            etacolumn[k] = -1 / dullBasicDirection[i];
                         else
-                            etacolumn[k] = -dullBasicDirection[k] / dullBasicDirection[base[i]];
+                            etacolumn[k] = -dullBasicDirection[k] / dullBasicDirection[i];
                     }
+                    vd aux = Binverse[i];
                     for (int l = 0; l < m; ++l)
                     {
-                        if (l != base[i])
-                            Binverse[l] = Binverse[l] + etacolumn[l] * Binverse[base[i]];
+                        if (l != i)
+                            Binverse[l] = Binverse[l] + etacolumn[l] * aux;
                         else
                             Binverse[l] = etacolumn[l] * Binverse[l];
                     }
                     /* CHANGING THE BASIC MATRIX WHEN EXCHANGING DEGENERATE ORIGINAL VARIABLES: END */
+                    // Check if correct
+                    check = Binverse * takeColumns(base, Ahat);
+                    assert((int)check.size() == m);
+                    for (int i = 0; i < m; i++)
+                        for (int j = 0; j < m; j++)
+                            assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+        
                 }
             }
             while ((int)solution.size() > m)
@@ -237,12 +266,20 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
 
             Ahat = A;
             z = subvec(costs, base) * subvec(solution, base);
+            // Check if correct
+            check = Binverse * takeColumns(base, Ahat);
+            assert((int)check.size() == m);
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < m; j++)
+                    assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+            cout << "Entered Phase II correctly" << endl;
         }
         else
         {
             cout << "apliquem la regla de bland" << endl;
-            q = blandRule(reducedCosts, nonBase);
-            cout << "rq: " << reducedCosts[q] << endl;
+            q = blandRule(reducedCosts, nonBase, rq);
+            assert(rq < 0);
+            cout << "rq: " << rq << endl;
             cout << "hem acabat d'aplicar la regla de bland" << endl;
         }
         /****    BFS IDENTIFICATION: END      ****/
@@ -315,13 +352,13 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 Binverse[i] = etacolumn[i] * Binverse[i];
         }
         // Check if correct
-        matrix check = Binverse * takeColumns(base, Ahat);
+        check = Binverse * takeColumns(base, Ahat);
         assert((int)check.size() == m);
         for (int i = 0; i < m; i++)
             for (int j = 0; j < m; j++)
                 assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
                     
-        z += maxStep * reducedCosts[q];
+        z += maxStep * rq;
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
     return unfeasibleProblem; // decoy
