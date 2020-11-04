@@ -5,6 +5,8 @@
 #include <utils.hh>
 #include <vec.hh>
 #include <matrix.hh>
+#include <cassert>
+#include <cmath>
 using namespace std;
 //#define _TEST_READ
 
@@ -148,7 +150,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
     for (int i = 0; i < n; ++i)
         nonBase[i] = i;
 
-    solution = paste(vd(n, 0.0), b); // phase 1 solution candidate
+    solution = paste(vd(n, 0.0), bhat); // phase 1 solution candidate
 
     double z = costsHat * solution;
     /****    INITIALIZATION: END      ****/
@@ -168,14 +170,16 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         ++iterations;
         /****    BFS IDENTIFICATION: BEGIN    ****/
         cout << "[iter " << iterations << "] Matrix A:" << endl;
-        printMatrix(Ahat);
+        //printMatrix(Ahat);
         cout << "[iter " << iterations << "] Matrix B^(-1):" << endl;
-        printMatrix(Binverse);
+        //printMatrix(Binverse);
         cout << "[iter " << iterations << "] Base:" << endl;
         printVec(base);
         cout << "[iter " << iterations << "] nonBase:" << endl;
         printVec(nonBase);
         reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, Ahat);
+        cout << "[iter " << iterations << "] reducedCosts:" << endl;
+        printVec(reducedCosts);
         cout << "pot calcular reducedCosts" << endl;
         cout << "z: " << z << endl;
         int q = -1;
@@ -238,12 +242,13 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         {
             cout << "apliquem la regla de bland" << endl;
             q = blandRule(reducedCosts, nonBase);
+            cout << "rq: " << reducedCosts[q] << endl;
             cout << "hem acabat d'aplicar la regla de bland" << endl;
         }
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
         cout << "[iter " << iterations << "] Matrix Ahat:" << endl;
-        printMatrix(Ahat);
+        //printMatrix(Ahat);
         vd db = (-1) * Binverse * column(Ahat, q);
         if (phase == 2 and db >= 0)
             return unlimitedProblem;
@@ -293,6 +298,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         base[exitVariable] = q;
 
         vd etacolumn(m, 0.0);
+        cout << "exitVariable: " << exitVariable << endl;
         for (int i = 0; i < m; ++i)
         {
             if (i == exitVariable)
@@ -300,13 +306,21 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             else
                 etacolumn[i] = -db[i] / db[exitVariable];
         }
+        vd aux = Binverse[exitVariable];
         for (int i = 0; i < m; ++i)
         {
             if (i != exitVariable)
-                Binverse[i] = Binverse[i] + etacolumn[i] * Binverse[exitVariable];
+                Binverse[i] = Binverse[i] + etacolumn[i] * aux;
             else
                 Binverse[i] = etacolumn[i] * Binverse[i];
         }
+        // Check if correct
+        matrix check = Binverse * takeColumns(base, Ahat);
+        assert((int)check.size() == m);
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < m; j++)
+                assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+                    
         z += maxStep * reducedCosts[q];
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
