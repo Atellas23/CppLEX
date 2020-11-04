@@ -82,3 +82,17 @@ bool operator>(const vd &v, double a)
     }
     return true;
 }
+
+void printVec(const vd &a)
+{
+    for (int i = 0; i < (int)a.size(); ++i)
+        cout << (i ? " " : "") << a[i];
+    cout << endl;
+}
+
+void printVec(const vi &a)
+{
+    for (int i = 0; i < (int)a.size(); ++i)
+        cout << (i ? " " : "") << a[i];
+    cout << endl;
+}

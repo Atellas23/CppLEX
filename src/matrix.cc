@@ -109,3 +109,9 @@ matrix paste(const matrix &A, const matrix &B)
         res[i] = paste(A[i], B[i]);
     return res;
 }
+
+void printMatrix(const matrix &A)
+{
+    for (auto row : A)
+        printVec(row);
+}

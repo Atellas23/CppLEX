@@ -6,7 +6,7 @@
 #include <vec.hh>
 #include <matrix.hh>
 using namespace std;
-#define _TEST_READ
+//#define _TEST_READ
 
 void read(string filename, matrix &A, vd &b, vd &c)
 {
@@ -82,7 +82,7 @@ int blandRule(const vd &r, const vi &n)
     int q = n[0];
     for (int i = 1; i < (int)n.size(); ++i)
     {
-        if (r[n[i]] < 0 and n[i] < q)
+        if (r[i] < 0 and n[i] < q)
             q = n[i];
     }
     return q;
@@ -109,7 +109,7 @@ an unlimited problem, a unique optimum problem or an alternative optima problem.
 the reference variable solution the optimum solution it finds, if it exists.
 
 A: matrix of the LP problem in standard form
-b: vector of constrictions
+b: non-negative vector of constrictions
 n: number of variables in the standard problem
 costs: vector of costs of the LP problem
 solution: vector where the final solution (if it exists) will be stored
@@ -127,6 +127,17 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
 
     vd costsHat = paste(vd(n, 0.0), vd(m, 1.0));
 
+    vd bhat = b;
+    // checking that b is non-negative (else phase I does not finish)
+    for (int i = 0; i < m; ++i)
+    {
+        if (b[i] < 0)
+        {
+            bhat[i] *= -1;
+            Ahat[i] = (-1) * Ahat[i]; // Ax is EQUAL to b so we don't have to care for changing the polarity of inequalities
+        }
+    }
+
     vi base(m);
     for (int i = 0; i < m; ++i)
         base[i] = n + i;
@@ -137,19 +148,31 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
     for (int i = 0; i < n; ++i)
         nonBase[i] = i;
 
-    vd xI = paste(vd(n, 0.0), b); // phase 1 solution candidate
+    solution = paste(vd(n, 0.0), b); // phase 1 solution candidate
 
-    double z = costsHat * xI;
+    double z = costsHat * solution;
     /****    INITIALIZATION: END      ****/
     iterations = phaseIiterations = 0;
-    cout << "xivato" << endl;
+    vd reducedCosts, oldSolution = solution;
     while (true /*unmet exit conditions*/)
     {
+        if (oldSolution == solution and iterations != 0)
+        {
+            cerr << "I've broken at iteration " << ++iterations << endl;
+            cerr << "the solution was:" << endl;
+            printVec(oldSolution);
+            exit(0);
+        }
         if (phase == 1)
             ++phaseIiterations;
         ++iterations;
         /****    BFS IDENTIFICATION: BEGIN    ****/
-        vd reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, A);
+        cout << "[iter " << iterations << "] Matrix A:" << endl;
+        printMatrix(Ahat);
+        cout << "[iter " << iterations << "] Matrix B^(-1):" << endl;
+        printMatrix(Binverse);
+        reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, Ahat);
+        cout << "pot calcular reducedCosts" << endl;
         int q = -1;
         if (reducedCosts >= 0)
         {
@@ -160,48 +183,62 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
 
             phase = 2;
             costsHat = costs;
+            cout << "hem entrat a fase II" << endl;
 
             // check basis inside of {1,...,n}
+            int weWantIdx = 0;
             for (int i = 0; i < (int)base.size(); ++i)
             {
-                int weWantIdx = 0;
-                if (base[i] >= n)
+                if (base[i] >= n) // means base[i] is exiting the base
                 {
                     for (int j = weWantIdx + 1; j < (int)nonBase.size(); ++j)
                     {
                         if (nonBase[j] < n)
                         {
-                            weWantIdx = j;
+                            weWantIdx = j; // the variable in nonBase[weWantIdx] is the one that will enter the basis
                             break;
                         }
                     }
+                    /* CHANGING THE BASIC MATRIX WHEN EXCHANGING DEGENERATE ORIGINAL VARIABLES: START */
+                    vd dullBasicDirection = (-1) * Binverse * column(Ahat, nonBase[weWantIdx]);
+                    // here, maxStep is 0 because we're not really moving between extreme points (we have degeneration)
+                    solution[nonBase[weWantIdx]] = solution[base[i]] = 0;
+
                     swap(base[i], nonBase[weWantIdx]);
+                    vd etacolumn(m, 0.0);
+                    for (int k = 0; k < m; ++k)
+                    {
+                        if (k == base[i])
+                            etacolumn[k] = -1 / dullBasicDirection[base[i]];
+                        else
+                            etacolumn[k] = -dullBasicDirection[k] / dullBasicDirection[base[i]];
+                    }
+                    for (int l = 0; l < m; ++l)
+                    {
+                        if (l != base[i])
+                            Binverse[l] = Binverse[l] + etacolumn[l] * Binverse[base[i]];
+                        else
+                            Binverse[l] = etacolumn[l] * Binverse[l];
+                    }
+                    /* CHANGING THE BASIC MATRIX WHEN EXCHANGING DEGENERATE ORIGINAL VARIABLES: END */
                 }
             }
-            // and if not, we can pick a non-basic variable and exchange
-            // them without taking any effect towards the solution
-
-            // In theory, we have to change the inverse of B as well (?)
-            /*
-            ||            ||   ||||||||||||||||   ||                      ||
-            ||            ||   ||            ||   ||                      ||
-            ||            ||   ||            ||   ||                      ||
-            ||            ||   ||            ||    \\        //\\        //
-            ||||||||||||||||   ||            ||     \\      //  \\      //
-            ||            ||   ||            ||      \\    //    \\    //
-            ||            ||   ||            ||       \\   ||    ||   //
-            ||            ||   ||            ||        \\  //    \\  //
-            ||            ||   ||||||||||||||||         \\//      \\//
-            */
+            while ((int)solution.size() > m)
+                solution.pop_back(); // we have to remove artificial variables since we're heading towards phase II
 
             Ahat = A;
             z = subvec(costs, base) * subvec(solution, base);
         }
         else
+        {
+            cout << "apliquem la regla de bland" << endl;
             q = blandRule(reducedCosts, nonBase);
+            cout << "hem acabat d'aplicar la regla de bland" << endl;
+        }
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
-        vd db = (-1) * Binverse * column(A, q);
+        printMatrix(Ahat);
+        vd db = (-1) * Binverse * column(Ahat, q);
         if (phase == 2 and db >= 0)
             return unlimitedProblem;
         /****    BASIC DIRECTION: END         ****/
@@ -212,6 +249,14 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         {
             if (db[i] < 0)
             {
+                /* cout << "BASE:" << endl;
+                printVec(base);
+                cout << endl
+                     << "DIRECCIO BASICA:" << endl;
+                printVec(db);
+                cout << endl
+                     << "SOLUCIO:" << endl;
+                printVec(solution); */
                 double tempStep = -solution[base[i]] / db[i];
                 if (tempStep < maxStep or (tempStep == maxStep and base[i] < base[exitVariable]))
                 {
@@ -220,8 +265,13 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 }
             }
         }
+        cout << "\u03B8*=" << maxStep << endl;
+        cout << "B(p)=" << base[exitVariable] << endl;
+        cout << "CURRENT SOLUTION (" << solution.size() << "): ";
+        printVec(solution);
         /****    MAX STEP: END                ****/
         /**** UPDATES AND BASIS CHANGE: BEGIN ****/
+        oldSolution = solution;
         for (int i = 0; i < (int)base.size(); ++i)
             solution[base[i]] += maxStep * db[i];
         solution[q] = maxStep;
@@ -262,8 +312,8 @@ int main(int argc, char **argv)
         cerr << "usage: " << argv[0] << " <data file name>" << endl;
         exit(0);
     }
-    cout << "First implementation of the Simplex algorithm, using" << endl
-         << "the Bland rule and the inverse-product form." << endl;
+    /* cout << "First implementation of the Simplex algorithm, using" << endl
+         << "the Bland rule and the inverse-product form." << endl; */
     matrix A;
     vd b, c;
     read(argv[1], A, b, c);
