@@ -171,8 +171,13 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         printMatrix(Ahat);
         cout << "[iter " << iterations << "] Matrix B^(-1):" << endl;
         printMatrix(Binverse);
+        cout << "[iter " << iterations << "] Base:" << endl;
+        printVec(base);
+        cout << "[iter " << iterations << "] nonBase:" << endl;
+        printVec(nonBase);
         reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, Ahat);
         cout << "pot calcular reducedCosts" << endl;
+        cout << "z: " << z << endl;
         int q = -1;
         if (reducedCosts >= 0)
         {
@@ -237,6 +242,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         }
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
+        cout << "[iter " << iterations << "] Matrix Ahat:" << endl;
         printMatrix(Ahat);
         vd db = (-1) * Binverse * column(Ahat, q);
         if (phase == 2 and db >= 0)
@@ -267,6 +273,8 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         }
         cout << "\u03B8*=" << maxStep << endl;
         cout << "B(p)=" << base[exitVariable] << endl;
+        cout << "[iter " << iterations << "] db:" << endl;
+        printVec(db);
         cout << "CURRENT SOLUTION (" << solution.size() << "): ";
         printVec(solution);
         /****    MAX STEP: END                ****/
@@ -280,7 +288,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         int idx = 0;
         while (nonBase[idx++] != q)
             continue;
-        nonBase[idx] = base[exitVariable];
+        nonBase[--idx] = base[exitVariable];
 
         base[exitVariable] = q;
 
