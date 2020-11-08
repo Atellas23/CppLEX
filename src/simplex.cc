@@ -79,13 +79,14 @@ void read(string filename, matrix &A, vd &b, vd &c)
 }
 
 // Precondition: There is one negative value in r
-int blandRule(const vd &r, const vi &n, double& rq)
+int blandRule(const vd &r, const vi &n, double &rq)
 {
     int q = n[0];
     rq = r[0];
     for (int i = 1; i < (int)n.size(); ++i)
     {
-        if (r[i] < 0 and n[i] < q){
+        if (r[i] < 0 and n[i] < q)
+        {
             q = n[i];
             rq = r[i];
         }
@@ -173,18 +174,18 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             ++phaseIiterations;
         ++iterations;
         /****    BFS IDENTIFICATION: BEGIN    ****/
-        cout << "[iter " << iterations << "] Matrix A:" << endl;
+        // cout << "[iter " << iterations << "] Matrix A:" << endl;
         //printMatrix(Ahat);
-        cout << "[iter " << iterations << "] Matrix B^(-1):" << endl;
+        // cout << "[iter " << iterations << "] Matrix B^(-1):" << endl;
         //printMatrix(Binverse);
         cout << "[iter " << iterations << "] Base:" << endl;
         printVec(base);
-        cout << "[iter " << iterations << "] nonBase:" << endl;
-        printVec(nonBase);
+        // cout << "[iter " << iterations << "] nonBase:" << endl;
+        // printVec(nonBase);
         reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, Ahat);
         cout << "[iter " << iterations << "] reducedCosts:" << endl;
         printVec(reducedCosts);
-        cout << "pot calcular reducedCosts" << endl;
+        // cout << "pot calcular reducedCosts" << endl;
         cout << "z: " << z << endl;
         int q = -1;
         double rq;
@@ -195,8 +196,8 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             assert((int)check.size() == m);
             for (int i = 0; i < m; i++)
                 for (int j = 0; j < m; j++)
-                    assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-        
+                    assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+
             if (phase == 2)
                 return uniqueOptimum;
             if (z > 0)
@@ -204,7 +205,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
 
             phase = 2;
             costsHat = costs;
-            cout << "hem entrat a fase II" << endl;
+            // cout << "hem entrat a fase II" << endl;
 
             // check basis inside of {1,...,n}
             int weWantIdx = -1;
@@ -230,8 +231,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                     assert((int)check.size() == m);
                     for (int i = 0; i < m; i++)
                         for (int j = 0; j < m; j++)
-                            assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-        
+                            assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
 
                     swap(base[i], nonBase[weWantIdx]);
                     vd etacolumn(m, 0.0);
@@ -257,12 +257,17 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                     assert((int)check.size() == m);
                     for (int i = 0; i < m; i++)
                         for (int j = 0; j < m; j++)
-                            assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-        
+                            assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
                 }
             }
-            while ((int)solution.size() > m)
+            while ((int)solution.size() > n)
                 solution.pop_back(); // we have to remove artificial variables since we're heading towards phase II
+
+            for (int i = (int)nonBase.size() - 1; i >= 0; --i)
+            {
+                if (nonBase[i] >= n)
+                    nonBase.erase(nonBase.begin() + i);
+            }
 
             Ahat = A;
             z = subvec(costs, base) * subvec(solution, base);
@@ -271,20 +276,21 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             assert((int)check.size() == m);
             for (int i = 0; i < m; i++)
                 for (int j = 0; j < m; j++)
-                    assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+                    assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
             cout << "Entered Phase II correctly" << endl;
+            continue;
         }
         else
         {
-            cout << "apliquem la regla de bland" << endl;
+            // cout << "apliquem la regla de bland" << endl;
             q = blandRule(reducedCosts, nonBase, rq);
             assert(rq < 0);
-            cout << "rq: " << rq << endl;
-            cout << "hem acabat d'aplicar la regla de bland" << endl;
+            // cout << "rq: " << rq << endl;
+            // cout << "hem acabat d'aplicar la regla de bland" << endl;
         }
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
-        cout << "[iter " << iterations << "] Matrix Ahat:" << endl;
+        // cout << "[iter " << iterations << "] Matrix Ahat:" << endl;
         //printMatrix(Ahat);
         vd db = (-1) * Binverse * column(Ahat, q);
         if (phase == 2 and db >= 0)
@@ -315,6 +321,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         }
         cout << "\u03B8*=" << maxStep << endl;
         cout << "B(p)=" << base[exitVariable] << endl;
+        cout << "q=" << q << endl;
         cout << "[iter " << iterations << "] db:" << endl;
         printVec(db);
         cout << "CURRENT SOLUTION (" << solution.size() << "): ";
@@ -356,8 +363,8 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         assert((int)check.size() == m);
         for (int i = 0; i < m; i++)
             for (int j = 0; j < m; j++)
-                assert((i == j and abs(check[i][j]-1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-                    
+                assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+
         z += maxStep * rq;
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
