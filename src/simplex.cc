@@ -294,6 +294,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 for (int j = 0; j < m; j++)
                     assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
 #endif
+            outfile << "[CppLEX]\t\titer " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", \u03B8* = " << 0.0 << ", z = " << 0.0 << endl;
             outfile << "[CppLEX]\t\tSBF inicial trobada a la iteració " << iterations << endl
                     << "[CppLEX]\tFase II" << endl;
             continue;
