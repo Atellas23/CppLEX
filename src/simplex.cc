@@ -197,7 +197,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 solutionBase = base;
                 return uniqueOptimum;
             }
-            if (z > 0)
+            if (abs(z) > 1e-7)
                 return unfeasibleProblem;
 
             phase = 2;
