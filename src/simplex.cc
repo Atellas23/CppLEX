@@ -300,8 +300,10 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
         vd db = (-1) * Binverse * column(Ahat, q);
-        if (phase == 2 and db >= 0)
+        if (phase == 2 and db >= 0){
+            solutionBase = base;
             return unlimitedProblem;
+        }
         /****    BASIC DIRECTION: END         ****/
         /****    MAX STEP: BEGIN              ****/
         double maxStep = DBL_MAX;
