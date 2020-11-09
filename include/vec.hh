@@ -15,5 +15,5 @@ vd paste(const vd &u, const vd &v);
 vd subvec(const vd &u, const vi &idxs);
 bool operator>=(const vd &v, double a);
 bool operator>(const vd &v, double a);
-void printVec(const vd &a);
-void printVec(const vi &a);
+string printVec(const vd &a);
+string printVec(const vi &a);

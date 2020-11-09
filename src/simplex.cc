@@ -8,16 +8,14 @@
 #include <cassert>
 #include <cmath>
 using namespace std;
-//#define _TEST_READ
+// #define _TEST_READ
+// #define CHECK
 
-void read(string filename, matrix &A, vd &b, vd &c)
+int read(string filename, matrix &A, vd &b, vd &c)
 {
     ifstream file(filename);
     if (not file.good())
-    {
-        cerr << "error: the file \"" << filename << "\" could not be loaded." << endl;
-        return;
-    }
+        return -1;
     bool matr = true, restrictions = false, costs = false;
     vd tempVec;
     while (not file.eof())
@@ -57,6 +55,7 @@ void read(string filename, matrix &A, vd &b, vd &c)
             for (auto ci : tkn)
                 c.push_back(stod(ci));
     }
+    return 0;
 #ifdef _TEST_READ
     cout << "Matrix A:" << endl;
     for (auto row : A)
@@ -121,8 +120,13 @@ costs: vector of costs of the LP problem
 solution: vector where the final solution (if it exists) will be stored
 solutionBase: vector where the final solution basis (if it exists) will be stored
 */
-problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi &solutionBase, int &iterations, int &phaseIiterations)
+problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi &solutionBase, int &iterations, int &phaseIiterations, ofstream &outfile)
 {
+    outfile.setf(ios::fixed);
+    outfile.precision(3);
+    outfile << "[CppLEX] Inici de l'ASP amb regla de Bland." << endl;
+    outfile << "[CppLEX]\tFase I" << endl;
+
     int n = costs.size();
     int m = b.size(); // rank of A
     /****    INITIALIZATION: BEGIN    ****/
@@ -157,12 +161,14 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
     solution = paste(vd(n, 0.0), bhat); // phase 1 solution candidate
 
     double z = costsHat * solution;
-    matrix check; vd chek, chek2;
+    matrix check;
+    vd chek, chek2;
     /****    INITIALIZATION: END      ****/
     iterations = phaseIiterations = 0;
     vd reducedCosts, oldSolution = solution;
     while (true /*unmet exit conditions*/)
     {
+#ifdef CHECK
         if (oldSolution == solution and iterations != 0)
         {
             cerr << "I've broken at iteration " << ++iterations << endl;
@@ -170,30 +176,26 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             printVec(oldSolution);
             exit(0);
         }
+#endif
         if (phase == 1)
             ++phaseIiterations;
         ++iterations;
         /****    BFS IDENTIFICATION: BEGIN    ****/
-        cout << endl << "[iter " << iterations << "]" << endl;
-        //printVec(base);
-        // cout << "[iter " << iterations << "] nonBase:" << endl;
-        // printVec(nonBase);
         reducedCosts = subvec(costsHat, nonBase) - subvec(costsHat, base) * Binverse * takeColumns(nonBase, Ahat);
-        //cout << "[iter " << iterations << "] reducedCosts:" << endl;
-        //printVec(reducedCosts);
-        cout << "z: " << z << endl;
         int q = -1;
         double rq;
         if (reducedCosts >= 0)
         {
+#ifdef CHECK
             // Check if correct
             check = Binverse * takeColumns(base, Ahat);
             assert((int)check.size() == m);
             for (int i = 0; i < m; i++)
                 for (int j = 0; j < m; j++)
                     assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-
-            if (phase == 2){
+#endif
+            if (phase == 2)
+            {
                 solutionBase = base;
                 return uniqueOptimum;
             }
@@ -221,17 +223,16 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                     vd dullBasicDirection = (-1) * Binverse * column(Ahat, nonBase[weWantIdx]);
                     // here, maxStep is 0 because we're not really moving between extreme points (we have degeneration)
                     solution[nonBase[weWantIdx]] = solution[base[i]] = 0;
-
+#ifdef CHECK
                     // Check if correct
                     check = Binverse * takeColumns(base, Ahat);
                     assert((int)check.size() == m);
                     for (int i = 0; i < m; i++)
                         for (int j = 0; j < m; j++)
                             assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-
+#endif
                     swap(base[i], nonBase[weWantIdx]);
                     vd etacolumn(m, 0.0);
-                    // exitVariable = i
                     for (int k = 0; k < m; ++k)
                     {
                         if (k == i)
@@ -247,13 +248,15 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                         else
                             Binverse[l] = etacolumn[l] * Binverse[l];
                     }
-                    /* CHANGING THE BASIC MATRIX WHEN EXCHANGING DEGENERATE ORIGINAL VARIABLES: END */
+/* CHANGING THE BASIC MATRIX WHEN EXCHANGING DEGENERATE ORIGINAL VARIABLES: END */
+#ifdef CHECK
                     // Check if correct
                     check = Binverse * takeColumns(base, Ahat);
                     assert((int)check.size() == m);
                     for (int i = 0; i < m; i++)
                         for (int j = 0; j < m; j++)
                             assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
+#endif
                 }
             }
             while ((int)solution.size() > n)
@@ -264,43 +267,48 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 if (nonBase[i] >= n)
                     nonBase.erase(nonBase.begin() + i);
             }
-            cout << "NonBASE phase II:" << endl;
-            printVec(nonBase);
 
             // Check solution is valid
             chek = Binverse * bhat;
             chek2 = subvec(solution, base);
             assert(chek.size() == chek2.size());
-            for (int i = 0; i < chek.size(); i++)
+            for (int i = 0; i < (int)chek.size(); i++)
                 assert(abs(chek[i] - chek2[i]) < 1e-5);
 
             Ahat = A;
             z = subvec(costsHat, base) * subvec(solution, base);
+#ifdef CHECK
             // Check if correct
             check = Binverse * takeColumns(base, Ahat);
             assert((int)check.size() == m);
             for (int i = 0; i < m; i++)
                 for (int j = 0; j < m; j++)
                     assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-            cout << "Entered Phase II correctly" << endl;
+#endif
+            outfile << "[CppLEX]\t\tSBF inicial trobada a la iteració " << iterations << endl
+                    << "[CppLEX]\tFase II" << endl;
             continue;
         }
         else
         {
             q = blandRule(reducedCosts, nonBase, rq);
+#ifdef CHECK
             assert(rq < 0);
-            cout << "rq: " << rq << endl;
+#endif
         }
+#ifdef CHECK
         // Check solution is valid
         chek = Binverse * bhat;
         chek2 = subvec(solution, base);
         assert(chek.size() == chek2.size());
-        for (int i = 0; i < chek.size(); i++)
+        for (int i = 0; i < (int)chek.size(); i++)
             assert(abs(chek[i] - chek2[i]) < 1e-5);
+#endif
         /****    BFS IDENTIFICATION: END      ****/
         /****    BASIC DIRECTION: BEGIN       ****/
         vd db = (-1) * Binverse * column(Ahat, q);
-        if (phase == 2 and db >= 0){
+        if (phase == 2 and db >= 0)
+        {
             solutionBase = base;
             return unlimitedProblem;
         }
@@ -320,14 +328,10 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 }
             }
         }
-        cout << "\u03B8*=" << maxStep << endl;
-        cout << "B(p)=" << base[exitVariable] << endl;
-        cout << "q=" << q << endl;
-        //cout << "[iter " << iterations << "] db:" << endl;
-        //printVec(db);
-        //cout << "CURRENT SOLUTION (" << solution.size() << "): ";
-        //printVec(solution);
         /****    MAX STEP: END                ****/
+
+        outfile << "[CppLEX]\t\titer " << iterations << ": q = " << q << ", rq = " << rq << ", B(p) = " << base[exitVariable] << ", \u03B8* = " << maxStep;
+
         /**** UPDATES AND BASIS CHANGE: BEGIN ****/
         oldSolution = solution;
         for (int i = 0; i < (int)base.size(); ++i)
@@ -358,21 +362,25 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             else
                 Binverse[i] = etacolumn[i] * Binverse[i];
         }
+#ifdef CHECK
         // Check if correct
         check = Binverse * takeColumns(base, Ahat);
         assert((int)check.size() == m);
         for (int i = 0; i < m; i++)
             for (int j = 0; j < m; j++)
                 assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
-
+#endif
         z += maxStep * rq;
 
+        outfile << ", z=" << z << endl;
+#ifdef CHECK
         // Check solution is valid
         chek = Binverse * bhat;
         chek2 = subvec(solution, base);
         assert(chek.size() == chek2.size());
-        for (int i = 0; i < chek.size(); i++)
+        for (int i = 0; i < (int)chek.size(); i++)
             assert(abs(chek[i] - chek2[i]) < 1e-5);
+#endif
         /**** UPDATES AND BASIS CHANGE: END   ****/
     }
     return unfeasibleProblem; // decoy
@@ -385,43 +393,53 @@ int main(int argc, char **argv)
         cerr << "usage: " << argv[0] << " <data file name>" << endl;
         exit(0);
     }
-    /* cout << "First implementation of the Simplex algorithm, using" << endl
-         << "the Bland rule and the inverse-product form." << endl; */
     matrix A;
     vd b, c;
-    read(argv[1], A, b, c);
+    int err = read(argv[1], A, b, c);
+    if (err < 0)
+    {
+        cerr << "error: file \"" << argv[1] << "\" could not be loaded" << endl;
+        exit(0);
+    }
 #ifndef _TEST_READ
     vd storeSolution(c.size(), 0.0);
     vi storeBase(b.size(), 0);
     int it = 0, phIit = 0;
-    cout << "presimplex" << endl;
-    problemType PL = ASP1(A, b, c, storeSolution, storeBase, it, phIit);
-    cout << "postsimplex" << endl;
+    ofstream outputDataFile(string(argv[1]) + ".out");
+    problemType PL = ASP1(A, b, c, storeSolution, storeBase, it, phIit, outputDataFile);
     if (PL == unlimitedProblem)
     {
-        cout << "The problem returned as an unlimited problem after " << phIit << " Simplex phase I iterations and " << it << " phase II iterations." << endl;
-        cout << "The found solution is:" << endl;
-        for (int i = 0; i < (int)storeSolution.size(); ++i)
-            cout << (i ? " " : "") << storeSolution[i];
+        outputDataFile << "[CppLEX]\t\tHem determinat que el problema és il·limitat a la iteració " << it << endl;
+        outputDataFile << "[CppLEX] Fi de l'ASP" << endl
+                       << endl
+                       << endl
+                       << "B* = " << printVec(storeBase) << endl
+                       << "xB* = " << printVec(subvec(storeSolution, storeBase)) << endl;
+        cout << "The problem returned as an unlimited problem after " << phIit << " Simplex phase I iterations and " << it << " phase I + phase II iterations." << endl;
+        cout << "The found solution is:" << endl
+             << printVec(subvec(storeSolution, storeBase)) << endl;
         cout << endl
-             << "for the basis B = {";
-        for (int i = 0; i < (int)storeBase.size(); ++i)
-            cout << (i ? "," : "") << storeBase[i]+1;
-        cout << "}." << endl;
+             << "for the basis B* = " << printVec(storeBase) << endl;
     }
     else if (PL == uniqueOptimum)
     {
+        outputDataFile << "[CppLEX]\t\tSolució òptima trobada, iteració " << it << ", z=" << c * storeSolution << endl;
+        outputDataFile << "[CppLEX] Fi de l'ASP" << endl
+                       << endl
+                       << endl
+                       << "B* = " << printVec(storeBase) << endl
+                       << "xB* = " << printVec(subvec(storeSolution, storeBase)) << endl;
         cout << "The problem found an optimum after " << phIit << " Simplex phase I iterations and " << it << " phase II iterations." << endl;
-        cout << "The found solution is:" << endl;
-        for (int i = 0; i < (int)storeSolution.size(); ++i)
-            cout << (i ? " " : "") << storeSolution[i];
+        cout << "The found solution is xB* = " << endl
+             << printVec(subvec(storeSolution, storeBase));
         cout << endl
-             << "for the basis B = {";
-        for (int i = 0; i < (int)storeBase.size(); ++i)
-            cout << (i ? "," : "") << storeBase[i]+1;
-        cout << "}." << endl;
+             << "for the basis B* = " << printVec(storeBase) << endl;
     }
     else
+    {
         cout << "The problem returned as an unfeasible problem after " << phIit << " Simplex phase I iterations." << endl;
+        outputDataFile << "[CppLEX]\t\tHem determinat que el problema és infactible a la iteració " << it << endl;
+        outputDataFile << "[CppLEX] Fi de l'ASP" << endl;
+    }
 #endif
 }

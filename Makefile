@@ -34,4 +34,4 @@ test: $(all-tests)
 	$(patsubst %, %;, $^)
 
 clean:
-	rm -f $(ODIR)/*.o simplex.exe $(TDIR)/*.exe
+	rm -f $(ODIR)/*.o simplex.exe $(TDIR)/*.exe data/*.out
