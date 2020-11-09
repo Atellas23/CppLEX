@@ -94,15 +94,19 @@ int blandRule(const vd &r, const vi &n, double &rq)
 }
 
 // Precondition: There is one negative value in r
-int minValueRule(const vd &r, const vi &n)
+int minValueRule(const vd &r, const vi &n, double &rq)
 {
-    int q = n[0];
+    int q = 0;
+    rq = r[0];
     for (int i = 1; i < (int)n.size(); i++)
     {
-        if (r[n[i]] < r[q])
-            q = n[i];
+        if (r[i] < r[q])
+        {
+            q = i;
+            rq = r[i];
+        }
     }
-    return q;
+    return n[q];
 }
 
 /*
