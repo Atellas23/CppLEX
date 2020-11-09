@@ -128,8 +128,8 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
 {
     outfile.setf(ios::fixed);
     outfile.precision(3);
-    outfile << "[CppLEX] Inici de l'ASP amb regla de Bland." << endl;
-    outfile << "[CppLEX]\tFase I" << endl;
+    outfile << "[CppLEX] Start of the ASP with Bland Rule" << endl;
+    outfile << "[CppLEX]\tPhase I" << endl;
 
     int n = costs.size();
     int m = b.size(); // rank of A
@@ -203,7 +203,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             if (phase == 2)
             {
                 solutionBase = base;
-                outfile << "[CppLEX]\t\titer " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", \u03B8* = " << 0.0;
+                outfile << "[CppLEX]  iter " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", (*$\\theta$*)* = " << 0.0;
                 outfile << ", z=" << z << endl;
                 return uniqueOptimum;
             }
@@ -294,9 +294,9 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 for (int j = 0; j < m; j++)
                     assert((i == j and abs(check[i][j] - 1) < 1e-6) or (i != j and abs(check[i][j]) < 1e-6));
 #endif
-            outfile << "[CppLEX]\t\titer " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", \u03B8* = " << 0.0 << ", z = " << 0.0 << endl;
-            outfile << "[CppLEX]\t\tSBF inicial trobada a la iteració " << iterations << endl
-                    << "[CppLEX]\tFase II" << endl;
+            outfile << "[CppLEX]  iter " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", (*$\\theta$*)* = " << 0.0 << ", z = " << 0.0 << endl;
+            outfile << "[CppLEX]  Found initial SBF at iteration " << iterations << endl
+                    << "[CppLEX]\tPhase II" << endl;
             continue;
         }
         else
@@ -340,7 +340,7 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
         }
         /****    MAX STEP: END                ****/
 
-        outfile << "[CppLEX]\t\titer " << iterations << ": q = " << q << ", rq = " << rq << ", B(p) = " << base[exitVariable] << ", \u03B8* = " << maxStep;
+        outfile << "[CppLEX]  iter " << iterations << ": q = " << q << ", rq = " << rq << ", B(p) = " << base[exitVariable] << ", (*$\\theta$*)* = " << maxStep;
 
         /**** UPDATES AND BASIS CHANGE: BEGIN ****/
         oldSolution = solution;
@@ -419,8 +419,8 @@ int main(int argc, char **argv)
     problemType PL = ASP1(A, b, c, storeSolution, storeBase, it, phIit, outputDataFile);
     if (PL == unlimitedProblem)
     {
-        outputDataFile << "[CppLEX]\t\tHem determinat que el problema és il·limitat a la iteració " << it << endl;
-        outputDataFile << "[CppLEX] Fi de l'ASP" << endl
+        outputDataFile << "[CppLEX]  We determined the problem was unlimited at the iteration " << it << endl;
+        outputDataFile << "[CppLEX] End of ASP" << endl
                        << endl
                        << endl
                        << "B* = " << printVec(storeBase) << endl
@@ -433,8 +433,8 @@ int main(int argc, char **argv)
     }
     else if (PL == uniqueOptimum)
     {
-        outputDataFile << "[CppLEX]\t\tSolució òptima trobada, iteració " << it << ", z=" << c * storeSolution << endl;
-        outputDataFile << "[CppLEX] Fi de l'ASP" << endl
+        outputDataFile << "[CppLEX]  Optimal solution found, iteration: " << it << ", z=" << c * storeSolution << endl;
+        outputDataFile << "[CppLEX] End of ASP" << endl
                        << endl
                        << endl
                        << "B* = " << printVec(storeBase) << endl
@@ -448,8 +448,8 @@ int main(int argc, char **argv)
     else
     {
         cout << "The problem returned as an unfeasible problem after " << phIit << " Simplex phase I iterations." << endl;
-        outputDataFile << "[CppLEX]\t\tHem determinat que el problema és infactible a la iteració " << it << endl;
-        outputDataFile << "[CppLEX] Fi de l'ASP" << endl;
+        outputDataFile << "[CppLEX]  We determined the problem was unfeasible at iteration " << it << endl;
+        outputDataFile << "[CppLEX] End of ASP" << endl;
     }
 #endif
 }
