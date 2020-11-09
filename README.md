@@ -6,8 +6,8 @@ This is a C++ implementation of the Primal Simplex Algorithm, done within the sc
 ## Usage
 ## To-Do
 
-1. Inverse of the basic matrix when checking that artificial variables are within the basis. (À/mail)
-    - Possible eta matrix function. (À/mail)
+1. ~Inverse of the basic matrix when checking that artificial variables are within the basis. (À/mail)
+    - Possible eta matrix function. (À/mail)~
 2. ~Most negative reduced cost rule. (J)~
     - In case of tie, what? (Currently, get the first)
 3. ~Test that matrix and vector functions work as expected. (J)~
