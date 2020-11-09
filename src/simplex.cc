@@ -165,8 +165,10 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
     solution = paste(vd(n, 0.0), bhat); // phase 1 solution candidate
 
     double z = costsHat * solution;
+#ifdef CHECK
     matrix check;
     vd chek, chek2;
+#endif
     /****    INITIALIZATION: END      ****/
     iterations = phaseIiterations = 0;
     vd reducedCosts, oldSolution = solution;
@@ -201,6 +203,8 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
             if (phase == 2)
             {
                 solutionBase = base;
+                outfile << "[CppLEX]\t\titer " << iterations << ": q = " << 0 << ", rq = " << 0.0 << ", B(p) = " << 0 << ", \u03B8* = " << 0.0;
+                outfile << ", z=" << z << endl;
                 return uniqueOptimum;
             }
             if (abs(z) > 1e-7)
@@ -271,13 +275,14 @@ problemType ASP1(const matrix &A, const vd &b, const vd &costs, vd &solution, vi
                 if (nonBase[i] >= n)
                     nonBase.erase(nonBase.begin() + i);
             }
-
+#ifdef CHECK
             // Check solution is valid
             chek = Binverse * bhat;
             chek2 = subvec(solution, base);
             assert(chek.size() == chek2.size());
             for (int i = 0; i < (int)chek.size(); i++)
                 assert(abs(chek[i] - chek2[i]) < 1e-5);
+#endif
 
             Ahat = A;
             z = subvec(costsHat, base) * subvec(solution, base);
